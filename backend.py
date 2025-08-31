@@ -12,7 +12,7 @@ app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 
 db = SQLAlchemy(app)
 
-# --- Models ---
+# user and post models
 class User(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     username = db.Column(db.String(80), unique=True, nullable=False)
@@ -41,7 +41,7 @@ class Audit(db.Model):
     details = db.Column(db.Text)
     timestamp = db.Column(db.DateTime, default=datetime.utcnow)
 
-# --- Simple in-memory rate limiter (per-IP) ---
+# Simple in-memory rate limiter (per-IP)
 RATE_LIMIT = {
     'window_seconds': 60,
     'max_requests': 10
@@ -62,7 +62,7 @@ def rate_limited():
     _requests[ip] = reqs
     return False
 
-# --- Simple content rules (example) ---
+# rules
 DISALLOWED_WORDS = {'insult1','insult2','illegalword'}  # replace with actual policy terms
 
 def violates_policy(text):
@@ -72,7 +72,7 @@ def violates_policy(text):
             return True, f"Contains disallowed term: {w}"
     return False, None
 
-# --- Helpers ---
+# wrapper function is used
 def login_required(f):
     @functools.wraps(f)
     def wrapper(*args, **kwargs):
@@ -102,7 +102,7 @@ def audit(action, details=''):
     db.session.add(Audit(action=action, details=details))
     db.session.commit()
 
-# --- Routes ---
+# routes
 @app.route('/init', methods=['POST'])
 def init_db():
     """Initialize DB and create an admin account (call once)."""
@@ -263,4 +263,5 @@ if __name__ == '__main__':
     with app.app_context():
         db.create_all()
     app.run(debug=True)
+
 
